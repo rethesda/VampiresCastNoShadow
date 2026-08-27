@@ -9,8 +9,7 @@ namespace VampiresCastNoShadow
 			using FLAG = RE::BSShaderProperty::EShaderPropertyFlag8;
 
 			RE::BSVisit::TraverseScenegraphGeometries(a_object, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
-				const auto& effect = a_geometry->properties[RE::BSGeometry::States::kEffect];
-				const auto lightingShader = netimmerse_cast<RE::BSLightingShaderProperty*>(effect.get());
+				const auto lightingShader = netimmerse_cast<RE::BSLightingShaderProperty*>(a_geometry->shaderProperty.get());
 				if (lightingShader) {
 					lightingShader->SetFlags(FLAG::kCastShadows, false);
 				}
@@ -48,24 +47,25 @@ namespace VampiresCastNoShadow
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
 
-    void Install()
+	void Install()
 	{
-		//B70 in .353
-		//B60 in .629+
-		REL::Relocation<std::uintptr_t> attach_armor{ RELOCATION_ID(15501, 15678), OFFSET_3(0xA13, 0xB60, 0xB0A) };
+		//B70 in 1.6.353
+		//B60 in 1.6.629+
+		//B70 in 1.7.99
+		REL::Relocation<std::uintptr_t> attach_armor{ RELOCATION_ID(15501, 15678), OFFSET_3_VERSIONED(0xA13, 0xB60, 0xB70, 0xB0A) };
 		stl::write_thunk_call<AttachBSFadeNode>(attach_armor.address());
 
-		logger::info("Installed armor hook");
+		REX::INFO("Installed armor hook");
 
 		//torches/weapons/anything with TESMODEL
 		REL::Relocation<std::uintptr_t> attach_weapon{ RELOCATION_ID(15569, 15746), OFFSET_3(0x2DD, 0x2EC, 0x32E) };
 		stl::write_thunk_call<AttachBSFadeNode>(attach_weapon.address());
 
-		logger::info("Installed model hook");
+		REX::INFO("Installed model hook");
 
 		REL::Relocation<std::uintptr_t> attach_head{ RELOCATION_ID(24228, 24732), OFFSET(0x1CD, 0x15B) };
 		stl::write_thunk_call<StoreHeadNodes>(attach_head.address());
 
-		logger::info("Installed head hook");
+		REX::INFO("Installed head hook");
 	}
 }
